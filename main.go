@@ -10,12 +10,60 @@ import (
 )
 
 type Resource struct {
-	Plugged    string
-	Battery    string
-	RequireGui string
-	Start      string
-	Stop       string
-	Status     string
+	when   string
+	Start  string
+	Stop   string
+	Status string
+}
+
+func (r *Resource) SetYAML(tag string, data interface{}) bool {
+	when, ok := data.(map[interface{}]interface{})["when"].(string)
+	if ok {
+		switch when {
+		case "always", "charging", "discharging", "never":
+			r.when = when
+		default:
+			log.Fatalf("\"%v\" not a valid value for \"when\"", when)
+		}
+	} else {
+		r.when = "charging"
+	}
+
+	start, ok := data.(map[interface{}]interface{})["start"].(string)
+	if !ok {
+		log.Fatalf("Failed to define start command")
+	}
+	r.Start = start
+
+	stop, ok := data.(map[interface{}]interface{})["stop"].(string)
+	if !ok {
+		log.Fatalf("Failed to define stop command")
+	}
+	r.Stop = stop
+
+	status, ok := data.(map[interface{}]interface{})["status"].(string)
+	if !ok {
+		log.Fatalf("Failed to define status command")
+	}
+	r.Status = status
+
+	return true
+}
+
+func (r *Resource) WhenPlugged() bool {
+	switch r.when {
+	case "always", "charging":
+		return true
+	}
+	return false
+}
+
+func (r *Resource) WhenUnplugged() bool {
+	switch r.when {
+	case "always", "discharging":
+		return true
+	}
+	return false
 }
 
 func (r Resource) GetStatus() error {
@@ -39,14 +87,14 @@ func (r Resource) RunStop() error {
 func (r Resource) Plug() {
 	status := r.GetStatus()
 	if status != nil {
-		if (r.Plugged == "running") {
+		if r.WhenPlugged() {
 			err := r.RunStart()
 			if err != nil {
 				log.Printf("[%v] %v", r.Start, err.Error())
 			}
 		}
 	} else {
-		if (r.Plugged == "stopped") {
+		if !r.WhenPlugged() {
 			err := r.RunStop()
 			if err != nil {
 				log.Printf("[%v] %v", r.Stop, err.Error())
@@ -58,14 +106,14 @@ func (r Resource) Plug() {
 func (r Resource) Unplug() {
 	status := r.GetStatus()
 	if status != nil {
-		if (r.Battery == "running") {
+		if r.WhenUnplugged() {
 			err := r.RunStart()
 			if err != nil {
 				log.Printf("[%v] %v", r.Start, err.Error())
 			}
 		}
 	} else {
-		if (r.Battery == "stopped") {
+		if !r.WhenUnplugged() {
 			err := r.RunStop()
 			if err != nil {
 				log.Printf("[%v] %v", r.Stop, err.Error())

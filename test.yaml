@@ -1,7 +1,6 @@
 dropbox:
   # Indicate when to run program
-  plugged: running
-  battery: stopped
+  when: charging
 
   # Command that starts program
   start: dropbox start
@@ -11,16 +10,16 @@ dropbox:
   status: "! dropbox running"
 
 transmission:
-  # "plugged" defaults to "running"
-  # "battery" defaults to "stopped"
+  # "when" defaults to "charging"
+  # when: charging
 
   start: transmission-gtk -m
   stop: pkill -f transmission-gtk
   status: pgrep -f transmission-gtk
 
 tracker:
-  # Only start program that requires gui if display server is running, defaults to yes
-  require_gui: no
+  # Valid values for "when" are "always", "charging", "discharging", "never"
+  when: always
 
   start: tracker-control -s
   stop: tracker-control -t
