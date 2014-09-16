@@ -1,3 +1,0 @@
-Get battery status from upower
-
-qdbus --system --literal org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.UPower.OnBattery
