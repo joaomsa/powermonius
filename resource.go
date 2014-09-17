@@ -113,3 +113,10 @@ func (r *Resource) Unplug() {
 		}
 	}
 }
+
+func (r *Resource) Suspend() {
+	status := r.Status()
+	if status == nil {
+		r.Stop()
+	}
+}
