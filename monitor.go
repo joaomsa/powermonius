@@ -77,8 +77,12 @@ func (m *Monitor) ListenDBus() {
 	for {
 		select {
 		case v := <-c:
-			props := v.Body[1].(map[string]dbus.Variant)
-			m.DBusCh <- props["OnBattery"].Value().(bool)
+			changedProperties := v.Body[1].(map[string]dbus.Variant)
+			if property, ok := changedProperties["OnBattery"]; ok {
+				m.DBusCh <- property.Value().(bool)
+			} else {
+				log.Printf("%#v", changedProperties)
+			}
 		case <-m.DoneCh:
 			return
 		}
