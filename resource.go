@@ -6,6 +6,7 @@ import (
 )
 
 type Resource struct {
+	Name      string
 	when      string
 	startCmd  string
 	stopCmd   string

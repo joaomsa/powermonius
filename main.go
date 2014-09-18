@@ -1,27 +1,22 @@
 package main
 
 import (
-	"gopkg.in/yaml.v1"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
+	"os/user"
+	"path"
 	"syscall"
 )
 
 func main() {
 	// Load and parse resource file
-	resourceFile := "test.yaml"
-	resourceData, readErr := ioutil.ReadFile(resourceFile)
-	if readErr != nil {
-		log.Fatalf("error: %v", readErr)
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatalf("error: %v", err)
 	}
-
-	resources := make(map[string]Resource)
-	yamlErr := yaml.Unmarshal([]byte(resourceData), resources)
-	if yamlErr != nil {
-		log.Fatalf("error: %v", yamlErr)
-	}
+	resourceFile := path.Join(usr.HomeDir, ".config/powermonius/resources.yaml")
+	resources := loadResourceFile(resourceFile)
 
 	// Monitor for battery changes and update resources
 	monitor := NewMonitor(&resources)
