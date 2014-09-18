@@ -14,19 +14,19 @@ func readResourceFile(filename string) (contents []byte) {
 	return contents
 }
 
-func parseResourceFile(filedata []byte) (resources map[string]Resource) {
-	resources = make(map[string]Resource)
+func parseResourceFile(filedata []byte) (resources map[string]*Resource) {
+	resources = make(map[string]*Resource)
 	if err := yaml.Unmarshal(filedata, resources); err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	for key, resource := range resources {
-		resource.Name = key
+	for key := range resources {
+		resources[key].Name = key
 	}
 
 	return resources
 }
 
-func loadResourceFile(filename string) map[string]Resource {
+func loadResourceFile(filename string) map[string]*Resource {
 	return parseResourceFile(readResourceFile(filename))
 }

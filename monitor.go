@@ -7,13 +7,13 @@ import (
 )
 
 type Monitor struct {
-	Resources   *map[string]Resource
+	Resources   *map[string]*Resource
 	ResourceLck sync.Mutex
 	OnBatteryCh chan bool
 	DoneCh      chan bool
 }
 
-func NewMonitor(resources *map[string]Resource) *Monitor {
+func NewMonitor(resources *map[string]*Resource) *Monitor {
 	m := &Monitor{
 		Resources:   resources,
 		OnBatteryCh: make(chan bool),
@@ -29,7 +29,7 @@ func (m *Monitor) UpdateResources(onBattery bool) {
 	var wg sync.WaitGroup
 	for _, resource := range *m.Resources {
 		wg.Add(1)
-		go func(r Resource) {
+		go func(r *Resource) {
 			defer wg.Done()
 			if onBattery {
 				r.Unplug()

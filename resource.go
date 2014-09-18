@@ -20,7 +20,7 @@ func (r *Resource) SetYAML(tag string, data interface{}) bool {
 		case "always", "charging", "discharging", "never":
 			r.when = when
 		default:
-			log.Fatalf("\"%v\" not a valid value for \"when\"", when)
+			log.Fatalf("\"%v\" not a valid value for \"when\"\n", when)
 		}
 	} else {
 		r.when = "charging"
@@ -28,19 +28,19 @@ func (r *Resource) SetYAML(tag string, data interface{}) bool {
 
 	start, ok := data.(map[interface{}]interface{})["start"].(string)
 	if !ok {
-		log.Fatalf("Failed to define start command")
+		log.Fatalf("Failed to define start command\n")
 	}
 	r.startCmd = start
 
 	stop, ok := data.(map[interface{}]interface{})["stop"].(string)
 	if !ok {
-		log.Fatalf("Failed to define stop command")
+		log.Fatalf("Failed to define stop command\n")
 	}
 	r.stopCmd = stop
 
 	status, ok := data.(map[interface{}]interface{})["status"].(string)
 	if !ok {
-		log.Fatalf("Failed to define status command")
+		log.Fatalf("Failed to define status command\n")
 	}
 	r.statusCmd = status
 
@@ -65,26 +65,26 @@ func (r *Resource) WhenUnplugged() bool {
 
 func (r *Resource) Status() error {
 	cmd := exec.Command("bash", "-c", r.statusCmd)
-	log.Printf("[status] %v\n", r.statusCmd)
+	log.Printf("[status/%v] %v\n", r.Name, r.statusCmd)
 	return cmd.Run()
 }
 
 func (r *Resource) Start() error {
 	cmd := exec.Command("bash", "-c", r.startCmd)
-	log.Printf("[start] %v\n", r.startCmd)
+	log.Printf("[start/%v] %v\n", r.Name, r.startCmd)
 	err := cmd.Start()
 	if err != nil {
-		log.Printf("[%v] %v", r.startCmd, err.Error())
+		log.Printf("[start/%v/err] %v\n", r.Name, err.Error())
 	}
 	return err
 }
 
 func (r *Resource) Stop() error {
 	cmd := exec.Command("bash", "-c", r.stopCmd)
-	log.Printf("[stop] %v\n", r.stopCmd)
+	log.Printf("[stop/%v] %v\n", r.Name, r.stopCmd)
 	err := cmd.Start()
 	if err != nil {
-		log.Printf("[%v] %v", r.stopCmd, err.Error())
+		log.Printf("[stop/%v/err] %v\n", r.Name, err.Error())
 	}
 	return err
 }
