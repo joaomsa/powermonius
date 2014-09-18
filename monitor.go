@@ -7,23 +7,25 @@ import (
 )
 
 type Monitor struct {
-	Resources         *map[string]Resource
-	OnBatteryCh       chan bool
-	PrepareForSleepCh chan bool
-	DoneCh            chan bool
+	Resources   *map[string]Resource
+	ResourceLck sync.Mutex
+	OnBatteryCh chan bool
+	DoneCh      chan bool
 }
 
 func NewMonitor(resources *map[string]Resource) *Monitor {
 	m := &Monitor{
-		Resources:         resources,
-		OnBatteryCh:       make(chan bool),
-		PrepareForSleepCh: make(chan bool),
-		DoneCh:            make(chan bool),
+		Resources:   resources,
+		OnBatteryCh: make(chan bool),
+		DoneCh:      make(chan bool),
 	}
 	return m
 }
 
 func (m *Monitor) UpdateResources(onBattery bool) {
+	m.ResourceLck.Lock()
+	defer m.ResourceLck.Unlock()
+
 	var wg sync.WaitGroup
 	for _, resource := range *m.Resources {
 		wg.Add(1)
@@ -34,18 +36,6 @@ func (m *Monitor) UpdateResources(onBattery bool) {
 			} else {
 				r.Plug()
 			}
-		}(resource)
-	}
-	wg.Wait()
-}
-
-func (m *Monitor) SuspendResources() {
-	var wg sync.WaitGroup
-	for _, resource := range *m.Resources {
-		wg.Add(1)
-		go func(r Resource) {
-			defer wg.Done()
-			r.Suspend()
 		}(resource)
 	}
 	wg.Wait()
@@ -85,15 +75,6 @@ func (m *Monitor) ListenDBus() {
 		log.Fatalf("Failed to add match", call.Err)
 	}
 
-	matchRule = "type='signal',sender='org.freedesktop.login1',path='/org/freedesktop/login1',member='PrepareForSleep'"
-	call = conn.
-		BusObject().
-		Call("org.freedesktop.DBus.AddMatch", 0, matchRule)
-
-	if call.Err != nil {
-		log.Fatalf("Failed to add match", call.Err)
-	}
-
 	c := make(chan *dbus.Signal)
 	conn.Signal(c)
 
@@ -101,14 +82,6 @@ func (m *Monitor) ListenDBus() {
 		select {
 		case v := <-c:
 			switch v.Path {
-			case "/org/freedesktop/login1":
-				prepareForSleep := v.Body[0].(bool)
-				if prepareForSleep {
-					m.PrepareForSleepCh <- prepareForSleep
-				} else {
-					onBattery := m.CheckDBus()
-					m.OnBatteryCh <- onBattery
-				}
 			case "/org/freedesktop/UPower":
 				changedProperties := v.Body[1].(map[string]dbus.Variant)
 				if property, ok := changedProperties["OnBattery"]; ok {
@@ -129,8 +102,6 @@ func (m *Monitor) Listen() {
 		select {
 		case onBattery := <-m.OnBatteryCh:
 			m.UpdateResources(onBattery)
-		case <-m.PrepareForSleepCh:
-			m.SuspendResources()
 		case <-m.DoneCh:
 			return
 		}
