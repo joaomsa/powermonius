@@ -70,21 +70,29 @@ func (r *Resource) Status() error {
 }
 
 func (r *Resource) Start() error {
-	cmd := exec.Command("bash", "-c", r.startCmd)
+	cmd := exec.Command("nohup", "bash", "-c", r.startCmd + " &")
 	log.Printf("[start/%v] %v\n", r.Name, r.startCmd)
 	err := cmd.Start()
 	if err != nil {
 		log.Printf("[start/%v/err] %v\n", r.Name, err.Error())
 	}
+	exit_err := cmd.Wait()
+	if exit_err != nil {
+		log.Printf("[start/%v/exit] %v\n", r.Name, exit_err)
+	}
 	return err
 }
 
 func (r *Resource) Stop() error {
-	cmd := exec.Command("bash", "-c", r.stopCmd)
+	cmd := exec.Command("nohup", "bash", "-c", r.stopCmd + " &")
 	log.Printf("[stop/%v] %v\n", r.Name, r.stopCmd)
 	err := cmd.Start()
 	if err != nil {
 		log.Printf("[stop/%v/err] %v\n", r.Name, err.Error())
+	}
+	exit_err := cmd.Wait()
+	if exit_err != nil {
+		log.Printf("[stop/%v/exit] %v\n", r.Name, exit_err)
 	}
 	return err
 }
