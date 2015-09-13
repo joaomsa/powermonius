@@ -2,7 +2,7 @@
 
 Be parsimonious with power consumption. Run only what you need when on battery.
 
-powermonius monitors your laptop's power state, charging or discharging, to  conditionally start and stop power draining applications.
+powermonius monitors your laptop's power state, charging or discharging, to conditionally start and stop power draining applications.
 
 ## Motivation
 
@@ -14,6 +14,29 @@ After trying out `start-stop-programs` module in [Laptop Mode Tools][lmt], I fou
 
 +   UPower
 +   DBus
++   Bash
+
+## Installation
+
+Install or update via the go command:
+
+```bash
+go get -u github.com/joaomsa/powermonius
+```
+
+or if you're on Arch Linux use this [PKGBUILD](https://github.com/joaomsa/powermonius-git)
+
+## Running
+
+Just call the executable directly
+
+```bash
+powermonius
+```
+
+Ideally powermonius should be started by the user's window manager, to ensure applications that require a display server are brought up properly.
+
+Output of commands executed is logged to stderr, might be useful for debugging to redirect it to a file
 
 ## Configuration
 
@@ -53,6 +76,15 @@ tracker:
   status: tracker-control -l | grep --q "Found [^0]\d* miners running"
 ```
 
-Ideally powermonius should be started by the users window manager, to ensure applications that require a display server are brought up okay.
+## Building
+
+```bash
+go get
+go build
+```
+
+## License
+
+[MIT](./LICENSE)
 
 [lmt]: http://samwel.tk/laptop_mode/
