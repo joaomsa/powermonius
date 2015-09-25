@@ -70,7 +70,7 @@ func (r *Resource) Status() error {
 }
 
 func (r *Resource) Start() error {
-	cmd := exec.Command("bash", "-c", "nohup " + r.startCmd + " &")
+	cmd := exec.Command("bash", "-c", "nohup "+r.startCmd+" &")
 	log.Printf("[start/%v] %v\n", r.Name, r.startCmd)
 	err := cmd.Start()
 	if err != nil {
@@ -84,7 +84,7 @@ func (r *Resource) Start() error {
 }
 
 func (r *Resource) Stop() error {
-	cmd := exec.Command("bash", "-c", "nohup " + r.stopCmd + " &")
+	cmd := exec.Command("bash", "-c", "nohup "+r.stopCmd+" &")
 	log.Printf("[stop/%v] %v\n", r.Name, r.stopCmd)
 	err := cmd.Start()
 	if err != nil {
