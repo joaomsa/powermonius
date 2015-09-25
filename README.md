@@ -24,7 +24,7 @@ Install or update via the go command:
 go get -u github.com/joaomsa/powermonius
 ```
 
-or if you're on Arch Linux use this [PKGBUILD](https://github.com/joaomsa/powermonius-git)
+`go get` installs the executable in `$GOPATH/bin` or if you're on Arch Linux there's this [PKGBUILD](https://github.com/joaomsa/powermonius-git)
 
 ## Running
 
@@ -36,7 +36,21 @@ powermonius
 
 Ideally powermonius should be started by the user's window manager, to ensure applications that require a display server are brought up properly.
 
-Output of commands executed is logged to stderr, might be useful for debugging to redirect it to a file
+Output of commands executed is logged to stderr:
+
+```
+2015/09/25 19:11:22 [status/dropbox] ! dropbox-cli running
+2015/09/25 19:11:22 [status/transmission] pgrep -f "transmission-gtk"
+2015/09/25 19:11:22 [status/tracker] tracker-control -p | grep -P "Found process ID \d+ for '.+'"
+2015/09/25 19:13:05 [start/dropbox] dropbox-cli start
+...
+```
+
+Might be useful for debugging to redirect it to a file.
+
+```bash
+powermonius >>~/.config/powermonius/log 2>&1
+```
 
 ## Configuration
 
@@ -74,6 +88,12 @@ tracker:
   start: tracker-control -s
   stop: tracker-control -t
   status: tracker-control -l | grep --q "Found [^0]\d* miners running"
+```
+
+If you want to force powermonius to reload its configuration and recheck the status of every resource just send it a `USR1` signal
+
+```bash
+pkill -USR1 powermonius
 ```
 
 ## Building
