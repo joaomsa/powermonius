@@ -19,12 +19,28 @@ func main() {
 	resources := loadResourceFile(resourceFile)
 
 	// Monitor for battery changes and update resources
-	monitor := NewMonitor(&resources)
+	monitor := NewMonitor()
+	monitor.SetResources(&resources)
 	go monitor.Listen()
 	defer monitor.Stop()
 
-	// Listen for interrupts and quit
-	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	log.Println(<-ch)
+	// Listen for reload, interrupts and quit
+	sigCh := make(chan os.Signal)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1)
+
+	for {
+		select {
+		case sig := <-sigCh:
+			log.Printf("Received signal: %v", sig)
+			if sig == syscall.SIGUSR1 {
+				log.Printf("Reloading configuration")
+				resources = loadResourceFile(resourceFile)
+				monitor.SetResources(&resources)
+				onBattery := monitor.CheckDBus()
+				monitor.UpdateResources(onBattery)
+			} else {
+				return
+			}
+		}
+	}
 }

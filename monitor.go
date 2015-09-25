@@ -13,13 +13,21 @@ type Monitor struct {
 	DoneCh      chan bool
 }
 
-func NewMonitor(resources *map[string]*Resource) *Monitor {
+func NewMonitor() *Monitor {
+	resources := make(map[string]*Resource)
 	m := &Monitor{
-		Resources:   resources,
+		Resources:   &resources,
 		OnBatteryCh: make(chan bool),
 		DoneCh:      make(chan bool),
 	}
 	return m
+}
+
+func (m *Monitor) SetResources(resources *map[string]*Resource) {
+	m.ResourceLck.Lock()
+	defer m.ResourceLck.Unlock()
+
+	m.Resources = resources
 }
 
 func (m *Monitor) UpdateResources(onBattery bool) {
@@ -109,5 +117,6 @@ func (m *Monitor) Listen() {
 }
 
 func (m *Monitor) Stop() {
+	log.Printf("Stopping monitor")
 	close(m.DoneCh)
 }
