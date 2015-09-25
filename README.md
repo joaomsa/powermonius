@@ -24,7 +24,7 @@ Install or update via the go command:
 go get -u github.com/joaomsa/powermonius
 ```
 
-`go get` installs the executable in `$GOPATH/bin` or if you're on Arch Linux there's this [PKGBUILD](https://github.com/joaomsa/powermonius-git)
+`go get` installs the executable in `$GOPATH/bin` or if you're on Arch Linux there's this [PKGBUILD][pkgbuild]
 
 ## Running
 
@@ -108,3 +108,4 @@ go build
 [MIT](./LICENSE)
 
 [lmt]: http://samwel.tk/laptop_mode/
+[pkgbuild]: https://aur.archlinux.org/packages/powermonius-git/
